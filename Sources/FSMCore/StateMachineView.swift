@@ -118,6 +118,7 @@ struct FlowContainerView<S: State, E: Event, Content: View>: View {
 
 // MARK: - View Modifiers
 extension View {
+    @MainActor
     func onStateChange<S: State, E: Event>(
         of stateMachine: StateMachine<S, E>,
         perform action: @escaping (S, S) -> Void
