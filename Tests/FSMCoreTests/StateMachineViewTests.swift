@@ -7,7 +7,7 @@ import SwiftUI
 struct StateMachineViewTests {
     
     // MARK: - Test Helpers
-    enum TestUIState: String, FSMCore.State, CaseIterable {
+    enum TestUIState: String, FSMState, CaseIterable {
         case loading
         case content
         case error
@@ -15,7 +15,7 @@ struct StateMachineViewTests {
         var description: String { rawValue }
     }
     
-    enum TestUIEvent: String, FSMCore.Event {
+    enum TestUIEvent: String, FSMEvent {
         case loadData
         case showContent
         case showError
@@ -50,12 +50,12 @@ struct StateMachineViewTests {
     @Test("StateMachineProgressView calculates progress correctly")
     func testProgressViewCalculation() async {
         await MainActor.run {
-            enum ProgressState: String, FSMCore.State, CaseIterable {
+            enum ProgressState: String, FSMState, CaseIterable {
                 case step1, step2, step3, complete
                 var description: String { rawValue }
             }
             
-            enum ProgressEvent: String, FSMCore.Event {
+            enum ProgressEvent: String, FSMEvent {
                 case next
                 var type: String { rawValue }
             }

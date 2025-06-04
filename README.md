@@ -31,6 +31,61 @@ FSMCore/
 
 ## 📖 Quick Start
 
+### 1. Define Your States and Events
+
+```swift
+import FSMCore
+
+enum LoadingState: String, FSMState, CaseIterable {
+    case idle, loading, success, error
+    
+    var description: String { rawValue }
+}
+
+enum LoadingEvent: String, FSMEvent {
+    case start, succeed, fail, retry, reset
+    
+    var type: String { rawValue }
+}
+```
+
+### 2. Create State Machine Configuration
+
+```swift
+let config = StateMachineConfig<LoadingState, LoadingEvent>(
+    initialState: .idle,
+    transitions: [
+        StateTransition(from: .idle, event: .start, to: .loading),
+        StateTransition(from: .loading, event: .succeed, to: .success),
+        StateTransition(from: .loading, event: .fail, to: .error),
+        StateTransition(from: .error, event: .retry, to: .loading),
+        StateTransition(from: .success, event: .reset, to: .idle),
+        StateTransition(from: .error, event: .reset, to: .idle)
+    ]
+)
+```
+
+### 3. Initialize and Use State Machine
+
+```swift
+@MainActor
+class ViewModel: ObservableObject {
+    let stateMachine = StateMachine(config: config)
+    
+    func startLoading() {
+        stateMachine.send(.start)
+    }
+    
+    func handleSuccess() {
+        stateMachine.send(.succeed)
+    }
+    
+    func handleError() {
+        stateMachine.send(.fail)
+    }
+}
+```
+
 ### Installation
 
 #### Swift Package Manager

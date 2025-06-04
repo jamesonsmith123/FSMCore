@@ -6,20 +6,22 @@ struct StateMachineTestHelper {
     
     /// Creates a simple state machine for testing purposes
     @MainActor
-    static func createSimpleTestMachine<S: State, E: Event>(
+    static func createSimpleTestMachine<S: FSMState, E: FSMEvent>(
         initialState: S,
-        transitions: [StateTransition<S, E>]
+        transitions: [StateTransition<S, E>],
+        onStateChange: ((S, S) -> Void)? = nil
     ) -> StateMachine<S, E> {
         let config = StateMachineConfig<S, E>(
             initialState: initialState,
-            transitions: transitions
+            transitions: transitions,
+            onStateChange: onStateChange
         )
         return StateMachine(config: config)
     }
     
     /// Executes a sequence of events and returns the resulting states
     @MainActor
-    static func executeEventSequence<S: State, E: Event>(
+    static func executeEventSequence<S: FSMState, E: FSMEvent>(
         stateMachine: StateMachine<S, E>,
         events: [E]
     ) -> [S] {
@@ -35,28 +37,27 @@ struct StateMachineTestHelper {
     
     /// Verifies a state machine follows an expected state sequence for given events
     @MainActor
-    static func verifyStateSequence<S: State, E: Event>(
+    static func verifyStateSequence<S: FSMState, E: FSMEvent>(
         stateMachine: StateMachine<S, E>,
         events: [E],
-        expectedStates: [S]
+        expectedStates: [S],
+        file: String = #file, line: Int = #line
     ) {
         let actualStates = executeEventSequence(stateMachine: stateMachine, events: events)
         
-        guard actualStates.count == expectedStates.count else {
-            Issue.record("State sequence length mismatch. Expected \(expectedStates.count), got \(actualStates.count)")
-            return
-        }
-        
-        for (index, (actual, expected)) in zip(actualStates, expectedStates).enumerated() {
-            if actual != expected {
-                Issue.record("State mismatch at index \(index). Expected \(expected), got \(actual)")
-            }
+        if actualStates != expectedStates {
+            Issue.record("""
+                State sequence mismatch:
+                Expected: \(expectedStates)
+                Actual: \(actualStates)
+                Events: \(events)
+                """)
         }
     }
     
     /// Creates a mock state machine with logging capabilities using a reference type for the log
     @MainActor
-    static func createLoggingStateMachine<S: State, E: Event>(
+    static func createLoggingStateMachine<S: FSMState, E: FSMEvent>(
         initialState: S,
         transitions: [StateTransition<S, E>],
         logger: MockLogger
@@ -73,32 +74,32 @@ struct StateMachineTestHelper {
 }
 
 // MARK: - Common Test State and Event Definitions
-enum LinearFlowState: String, State, CaseIterable {
+enum LinearFlowState: String, FSMState, CaseIterable {
     case step1, step2, step3, completed
     var description: String { rawValue }
 }
 
-enum LinearFlowEvent: String, Event {
+enum LinearFlowEvent: String, FSMEvent {
     case next, previous, reset
     var type: String { rawValue }
 }
 
-enum LoadingState: String, State, CaseIterable {
+enum LoadingState: String, FSMState, CaseIterable {
     case idle, loading, success, error
     var description: String { rawValue }
 }
 
-enum LoadingEvent: String, Event {
+enum LoadingEvent: String, FSMEvent {
     case start, succeed, fail, reset, retry
     var type: String { rawValue }
 }
 
-enum FormState: String, State, CaseIterable {
+enum FormState: String, FSMState, CaseIterable {
     case editing, submitting, success, error
     var description: String { rawValue }
 }
 
-enum FormEvent: String, Event {
+enum FormEvent: String, FSMEvent {
     case submit, succeed, fail, reset
     var type: String { rawValue }
 }
@@ -197,7 +198,7 @@ extension StateMachine {
 
 // MARK: - Mock Objects for Testing
 @MainActor
-class MockStateChangeObserver<S: State> {
+class MockStateChangeObserver<S: FSMState> {
     private(set) var stateChanges: [(from: S, to: S)] = []
     
     var onStateChange: (S, S) -> Void {

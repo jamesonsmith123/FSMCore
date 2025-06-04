@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - State Machine View Builder
-struct StateMachineView<S: State, E: Event, Content: View>: View {
+struct StateMachineView<S: FSMState, E: FSMEvent, Content: View>: View {
     @ObservedObject var stateMachine: StateMachine<S, E>
     let content: (S, @escaping (E) -> Void) -> Content
     
@@ -18,7 +18,7 @@ struct StateMachineView<S: State, E: Event, Content: View>: View {
 }
 
 // MARK: - State Conditional View
-struct StateConditionalView<S: State, E: Event, Content: View>: View {
+struct StateConditionalView<S: FSMState, E: FSMEvent, Content: View>: View {
     @ObservedObject var stateMachine: StateMachine<S, E>
     let targetState: S
     let content: Content
@@ -37,7 +37,7 @@ struct StateConditionalView<S: State, E: Event, Content: View>: View {
 }
 
 // MARK: - Progress Bar View
-struct StateMachineProgressView<S: State, E: Event>: View {
+struct StateMachineProgressView<S: FSMState, E: FSMEvent>: View {
     @ObservedObject var stateMachine: StateMachine<S, E>
     let showLabels: Bool
     
@@ -73,7 +73,7 @@ struct StateMachineProgressView<S: State, E: Event>: View {
 }
 
 // MARK: - State Transition Button
-struct StateTransitionButton<S: State, E: Event>: View {
+struct StateTransitionButton<S: FSMState, E: FSMEvent>: View {
     @ObservedObject var stateMachine: StateMachine<S, E>
     let event: E
     let title: String
@@ -93,7 +93,7 @@ struct StateTransitionButton<S: State, E: Event>: View {
 }
 
 // MARK: - Flow Container View
-struct FlowContainerView<S: State, E: Event, Content: View>: View {
+struct FlowContainerView<S: FSMState, E: FSMEvent, Content: View>: View {
     @ObservedObject var stateMachine: StateMachine<S, E>
     let showProgress: Bool
     let content: Content
@@ -119,7 +119,7 @@ struct FlowContainerView<S: State, E: Event, Content: View>: View {
 // MARK: - View Modifiers
 extension View {
     @MainActor
-    func onStateChange<S: State, E: Event>(
+    func onStateChange<S: FSMState, E: FSMEvent>(
         of stateMachine: StateMachine<S, E>,
         perform action: @escaping (S, S) -> Void
     ) -> some View {
@@ -132,7 +132,7 @@ extension View {
 
 // MARK: - State Machine Builder (DSL-like)
 @resultBuilder
-struct StateTransitionBuilder<S: State, E: Event> {
+struct StateTransitionBuilder<S: FSMState, E: FSMEvent> {
     static func buildBlock(_ transitions: StateTransition<S, E>...) -> [StateTransition<S, E>] {
         return transitions
     }

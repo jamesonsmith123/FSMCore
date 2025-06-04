@@ -2,7 +2,7 @@ import Testing
 @testable import FSMCore
 
 // MARK: - Test State and Event Definitions
-enum TestState: String, State, CaseIterable {
+enum TestState: String, FSMState, CaseIterable {
     case idle
     case loading
     case success
@@ -11,16 +11,17 @@ enum TestState: String, State, CaseIterable {
     var description: String { rawValue }
 }
 
-enum TestEvent: String, Event {
+enum TestEvent: String, FSMEvent {
     case start
     case succeed
     case fail
     case reset
+    case retry
     
     var type: String { rawValue }
 }
 
-enum FlowState: String, State, CaseIterable {
+enum FlowState: String, FSMState, CaseIterable {
     case step1
     case step2
     case step3
@@ -30,7 +31,7 @@ enum FlowState: String, State, CaseIterable {
     var description: String { rawValue }
 }
 
-enum FlowEvent: String, Event {
+enum FlowEvent: String, FSMEvent {
     case next
     case previous
     case skip
@@ -366,12 +367,12 @@ struct ProgressTests {
     @Test("Progress calculation handles single state")
     func testSingleStateProgress() async {
         await MainActor.run {
-            enum SingleState: String, State, CaseIterable {
+            enum SingleState: String, FSMState, CaseIterable {
                 case only
                 var description: String { rawValue }
             }
             
-            enum SingleEvent: String, Event {
+            enum SingleEvent: String, FSMEvent {
                 case noop
                 var type: String { rawValue }
             }

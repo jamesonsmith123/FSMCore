@@ -2,16 +2,16 @@ import Foundation
 import SwiftUI
 
 // MARK: - Core State Machine Protocol
-protocol State: Hashable, CaseIterable {
+protocol FSMState: Hashable, CaseIterable {
     var description: String { get }
 }
 
-protocol Event: Hashable {
+protocol FSMEvent: Hashable {
     var type: String { get }
 }
 
 // MARK: - State Transition
-struct StateTransition<S: State, E: Event> {
+struct StateTransition<S: FSMState, E: FSMEvent> {
     let from: S
     let event: E
     let to: S
@@ -28,7 +28,7 @@ struct StateTransition<S: State, E: Event> {
 }
 
 // MARK: - State Machine Configuration
-struct StateMachineConfig<S: State, E: Event> {
+struct StateMachineConfig<S: FSMState, E: FSMEvent> {
     let initialState: S
     let transitions: [StateTransition<S, E>]
     let onStateChange: ((S, S) -> Void)?
@@ -42,7 +42,7 @@ struct StateMachineConfig<S: State, E: Event> {
 
 // MARK: - State Machine
 @MainActor
-class StateMachine<S: State, E: Event>: ObservableObject {
+class StateMachine<S: FSMState, E: FSMEvent>: ObservableObject {
     @Published private(set) var currentState: S
     private let config: StateMachineConfig<S, E>
     private var transitionMap: [S: [E: StateTransition<S, E>]] = [:]
